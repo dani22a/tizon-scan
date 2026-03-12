@@ -120,9 +120,6 @@ export default function VideoSelector({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-slate-700">
-        Video (.mp4 o .mov)
-      </label>
 
       <input
         ref={fileInputRef}

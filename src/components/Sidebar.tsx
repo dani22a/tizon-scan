@@ -121,44 +121,44 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`w-80 shrink-0 flex flex-col transition-all h-full ${
+      className={`flex h-full w-72 shrink-0 flex-col transition-all ${
         isOpen
           ? "fixed top-20 bottom-4 left-4 z-40 shadow-2xl"
           : "hidden lg:flex"
       } lg:sticky lg:top-4`}
     >
-      <div className="h-full rounded-[28px] border border-white/10 bg-linear-to-br from-slate-950 via-brand-950 to-brand-900 text-white shadow-[0_25px_80px_-40px_rgba(15,23,42,0.9)] overflow-hidden">
-        <div className="lg:hidden p-3 flex justify-end">
+      <div className="h-full overflow-hidden rounded-[24px] border border-white/10 bg-linear-to-br from-slate-950 via-brand-950 to-brand-900 text-white shadow-[0_25px_80px_-40px_rgba(15,23,42,0.9)]">
+        <div className="flex justify-end p-2.5 lg:hidden">
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
+            className="rounded-full p-2 text-white/80 hover:bg-white/10"
           >
             <ArrowLeft size={20} />
           </button>
         </div>
 
-        <div className="px-5 pt-1 pb-4 border-b border-white/10">
-          <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-200/80">
+        <div className="border-b border-white/10 px-4 pt-1 pb-3">
+          <div className="rounded-[22px] border border-white/10 bg-white/5 px-3.5 py-3.5 backdrop-blur-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-brand-200/80">
               AI Workspace
             </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            <h2 className="mt-1.5 text-lg font-semibold tracking-tight">
               Centro de análisis visual
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">
+            <p className="mt-1.5 text-[13px] leading-5 text-slate-300">
               Navega entre diagnóstico, carga de videos e historial desde una experiencia
               más editorial.
             </p>
           </div>
         </div>
 
-        <div className="p-4 overflow-y-auto flex-1">
+        <div className="flex-1 overflow-y-auto p-3">
           {navGroups.map((group) => (
             <div
               key={group.heading}
-              className="mb-5"
+              className="mb-4"
             >
-              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-brand-200/65">
+              <p className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-200/65">
                 {group.heading}
               </p>
               <div className="space-y-1">
@@ -175,7 +175,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       pathname.startsWith(item.path + "/");
                   }
                   const baseClasses =
-                    `group w-full text-left px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-between gap-3 transition-all ` +
+                    `group flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13px] font-medium transition-all ` +
                     (active
                       ? "bg-white text-brand-900 shadow-[0_16px_35px_-22px_rgba(96,165,250,0.95)]"
                       : "text-slate-300 hover:bg-white/10 hover:text-white");
@@ -192,12 +192,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             className: active
                               ? "text-brand-700"
                               : "text-brand-200/70 group-hover:text-brand-100",
-                            size: 18,
+                            size: 17,
                           })}
                         <span className="truncate">{item.label}</span>
                       </div>
                       <span
-                        className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                        className={`h-2 w-2 rounded-full transition-colors ${
                           active ? "bg-brand-500" : "bg-white/10 group-hover:bg-brand-300/60"
                         }`}
                       />
@@ -209,11 +209,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           ))}
         </div>
 
-        <div className="mx-4 mb-4 rounded-3xl border border-brand-300/15 bg-white/5 px-4 py-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-200/65">
+        <div className="mx-3 mb-3 rounded-[22px] border border-brand-300/15 bg-white/5 px-3.5 py-3.5">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-brand-200/65">
             Estado
           </p>
-          <p className="mt-2 text-sm text-slate-200">
+          <p className="mt-1.5 text-[13px] leading-5 text-slate-200">
             Panel preparado para una navegación enfocada en IA y análisis visual.
           </p>
         </div>
