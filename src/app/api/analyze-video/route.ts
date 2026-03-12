@@ -103,13 +103,14 @@ export async function POST(request: Request) {
     );
 
     const pdfBuffer = await generateReportPdf(analysisResult);
+    const pdfFileName = "reporte-analisis-papa.pdf";
 
     const whatsappSummary = phone?.trim() ? buildWhatsAppSummary(analysisResult) : undefined;
 
     await sendReportViaWebhook(
       email.trim(),
       pdfBuffer,
-      "reporte-analisis-papa.pdf",
+      pdfFileName,
       undefined,
       undefined,
       phone?.trim() || undefined,
@@ -120,6 +121,8 @@ export async function POST(request: Request) {
       success: true,
       message: "Análisis completado. Revisa tu correo para el PDF.",
       analysis: analysisResult,
+      pdfBase64: pdfBuffer.toString("base64"),
+      pdfFileName,
     };
     console.log("[analyze-video] Respuesta OK:", JSON.stringify(response, null, 2));
     return NextResponse.json(response);

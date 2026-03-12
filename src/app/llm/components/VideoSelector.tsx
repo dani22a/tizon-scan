@@ -141,16 +141,16 @@ export default function VideoSelector({
           onDragLeave={handleDragLeave}
           className={`
             relative overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer
-            ${isDragging ? "border-emerald-500 bg-emerald-50/80 scale-[1.01]" : "border-slate-300 hover:border-emerald-400 hover:bg-slate-50/80"}
+            ${isDragging ? "border-brand-500 bg-brand-50/80 scale-[1.01]" : "border-brand-200 hover:border-brand-400 hover:bg-brand-50/70"}
             ${disabled ? "opacity-60 cursor-not-allowed" : ""}
             ${error ? "border-red-300 bg-red-50/30" : ""}
           `}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-emerald-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-brand-700/10 pointer-events-none" />
           <div className="relative flex flex-col items-center justify-center py-10 sm:py-12 px-6 text-center min-h-[180px]">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center mb-3 sm:mb-4 shadow-inner">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center mb-3 sm:mb-4 shadow-inner">
               <svg
-                className="w-8 h-8 text-emerald-600"
+                className="w-8 h-8 text-brand-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -170,14 +170,14 @@ export default function VideoSelector({
               Formatos soportados: MP4, MOV
             </p>
             {isDragging && (
-              <p className="mt-3 text-emerald-600 text-sm font-medium animate-pulse">
+              <p className="mt-3 text-brand-600 text-sm font-medium animate-pulse">
                 Suelta el archivo aquí
               </p>
             )}
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border-2 border-emerald-200 bg-white overflow-hidden shadow-lg shadow-emerald-500/10">
+        <div className="rounded-[28px] border-2 border-brand-200 bg-white overflow-hidden shadow-lg shadow-brand-500/10">
           <div className="relative">
             <div className="aspect-video bg-slate-900 relative">
               {previewUrl ? (
@@ -190,11 +190,11 @@ export default function VideoSelector({
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
                 </div>
               )}
               <div className="absolute top-3 right-3 flex gap-2">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/90 text-white text-xs font-semibold backdrop-blur-sm">
+                <span className="px-3 py-1 rounded-full bg-brand-600/90 text-white text-xs font-semibold backdrop-blur-sm">
                   {selectedFile.name}
                 </span>
                 <button
@@ -210,7 +210,7 @@ export default function VideoSelector({
                 </button>
               </div>
             </div>
-            <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-emerald-50/50 border-t border-slate-100 flex flex-wrap items-center gap-4">
+            <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-brand-50/70 border-t border-slate-100 flex flex-wrap items-center gap-4">
               <span className="text-sm font-medium text-slate-700 truncate max-w-[200px]">
                 {selectedFile.name}
               </span>
@@ -218,7 +218,7 @@ export default function VideoSelector({
                 {formatFileSize(selectedFile.size)}
               </span>
               {duration !== null && (
-                <span className="text-xs text-emerald-600 font-medium">
+                <span className="text-xs text-brand-600 font-medium">
                   {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, "0")}
                 </span>
               )}
@@ -226,7 +226,7 @@ export default function VideoSelector({
                 type="button"
                 onClick={handleClick}
                 disabled={disabled}
-                className="ml-auto text-sm font-medium text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+                className="ml-auto text-sm font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50"
               >
                 Cambiar video
               </button>

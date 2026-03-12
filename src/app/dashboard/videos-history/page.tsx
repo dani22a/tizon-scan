@@ -106,7 +106,7 @@ export default function VideosHistoryPage() {
       ) : (
         <div className="space-y-3">
           {videos.map((v) => {
-            const analysis = v.analysis_payload as AnalysisResult | null;
+            const analysis = v.analysis_payload as unknown as AnalysisResult | null;
             const ag = analysis?.analisis_general;
             const isExpanded = expandedId === v.id;
 

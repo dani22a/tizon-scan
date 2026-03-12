@@ -138,7 +138,7 @@ export default function VideoTimeline({
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
             <p className="text-slate-500 text-sm">
               Extrayendo capturas del video...
             </p>
@@ -149,13 +149,13 @@ export default function VideoTimeline({
           {items.map((item, idx) => (
             <div
               key={`${item.segundo}-${idx}`}
-              className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-emerald-200 transition-colors"
+              className="flex flex-col sm:flex-row gap-4 p-4 rounded-[24px] border border-brand-100 bg-white shadow-sm hover:border-brand-200 transition-colors"
             >
               <div className="shrink-0">
-                <div className="w-full sm:w-48 aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                   {item.loading ? (
                     <div className="w-full h-full flex items-center justify-center bg-slate-100">
-                      <div className="w-8 h-8 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                      <div className="w-8 h-8 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin" />
                     </div>
                   ) : item.frameUrl ? (
                     <img
@@ -169,7 +169,7 @@ export default function VideoTimeline({
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-center text-sm font-semibold text-emerald-700">
+                <p className="mt-2 text-center text-sm font-semibold text-brand-700">
                   {formatSegundo(item.segundo)}
                 </p>
               </div>

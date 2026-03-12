@@ -63,8 +63,8 @@ export default function ModelSelector({
         <label className="block text-sm font-medium text-slate-700">
           Modelo Gemini
         </label>
-        <div className="flex items-center gap-3 py-3 px-4 rounded-xl border border-slate-200 bg-slate-50">
-          <div className="w-5 h-5 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+        <div className="flex items-center gap-3 py-3 px-4 rounded-xl border border-brand-100 bg-brand-50/70">
+          <div className="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
           <span className="text-slate-500 text-sm">Cargando modelos...</span>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function ModelSelector({
           value={value || models[0]?.id}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className="w-full py-3 pl-4 pr-10 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
+          className="w-full py-3 pl-4 pr-10 rounded-xl border border-brand-100 bg-white/90 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
         >
           {models.map((m) => (
             <option key={m.id} value={m.id}>

@@ -23,6 +23,16 @@ export default function VideoAnalyzerForm() {
     null
   );
   const [videoForTimeline, setVideoForTimeline] = useState<File | null>(null);
+  const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState("reporte-analisis-papa.pdf");
+
+  useEffect(() => {
+    return () => {
+      if (pdfDownloadUrl) {
+        URL.revokeObjectURL(pdfDownloadUrl);
+      }
+    };
+  }, [pdfDownloadUrl]);
 
   useEffect(() => {
     getPeriodos()
@@ -48,6 +58,11 @@ export default function VideoAnalyzerForm() {
     setSuccess(false);
     setAnalysisResult(null);
     setVideoForTimeline(null);
+    if (pdfDownloadUrl) {
+      URL.revokeObjectURL(pdfDownloadUrl);
+      setPdfDownloadUrl(null);
+    }
+    setPdfFileName("reporte-analisis-papa.pdf");
 
     if (!selectedFile) {
       setError("Debes seleccionar un archivo de video");
@@ -107,6 +122,18 @@ export default function VideoAnalyzerForm() {
           console.warn("No se pudo guardar en historial:", err);
         });
       }
+      if (typeof data.pdfBase64 === "string" && data.pdfBase64) {
+        const binary = atob(data.pdfBase64);
+        const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const nextUrl = URL.createObjectURL(blob);
+        setPdfDownloadUrl(nextUrl);
+        setPdfFileName(
+          typeof data.pdfFileName === "string" && data.pdfFileName
+            ? data.pdfFileName
+            : "reporte-analisis-papa.pdf"
+        );
+      }
       setSelectedFile(null);
       setEmail("");
       setPhone("");
@@ -136,9 +163,8 @@ export default function VideoAnalyzerForm() {
           : "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]"
       }`}
     >
-      {/* Columna izquierda: video + resultado (cuando hay) */}
       <div className="space-y-6 min-w-0">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="app-shell-panel rounded-[30px] overflow-hidden">
           <VideoSelector
             selectedFile={selectedFile}
             onFileChange={handleFileChange}
@@ -149,8 +175,8 @@ export default function VideoAnalyzerForm() {
         </div>
 
         {success && videoForTimeline && analysisResult?.timeline_anotaciones && analysisResult.timeline_anotaciones.length > 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-hidden">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          <div className="app-shell-panel rounded-[30px] p-5 overflow-hidden">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-3">
               Timeline del video
             </p>
             <VideoTimeline
@@ -161,16 +187,18 @@ export default function VideoAnalyzerForm() {
         )}
       </div>
 
-      {/* Columna derecha: formulario */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4 xl:sticky xl:top-8 xl:self-start"
+        className="app-shell-panel rounded-[30px] p-5 sm:p-6 space-y-5 xl:sticky xl:top-8 xl:self-start"
       >
-        <div>
-          <h2 className="text-lg font-bold text-slate-800">
+        <div className="rounded-[24px] bg-linear-to-br from-brand-950 via-brand-900 to-brand-700 p-5 text-white">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-brand-100/75">
+            Submit node
+          </p>
+          <h2 className="mt-2 text-lg font-semibold">
             Análisis de video con IA
           </h2>
-          <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+          <p className="text-brand-100/80 text-xs mt-2 leading-6">
             Sube un video de hojas de papa para diagnosticar masivamente Tizón Tardío.
             El reporte se envía por correo y resumen por WhatsApp.
           </p>
@@ -196,7 +224,7 @@ export default function VideoAnalyzerForm() {
               setSelectedPeriodoId(e.target.value === "" ? "" : Number(e.target.value))
             }
             disabled={loading}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm disabled:opacity-50"
+            className="w-full px-3 py-2.5 rounded-xl border border-brand-100 bg-white/90 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-sm disabled:opacity-50"
           >
             <option value="">Sin campaña</option>
             {periodos.map((p) => (
@@ -226,7 +254,7 @@ export default function VideoAnalyzerForm() {
               placeholder="tu@correo.com"
               required
               disabled={loading}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
+              className="w-full px-3 py-2.5 rounded-xl border border-brand-100 bg-white/90 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
             />
           </div>
           <div>
@@ -243,7 +271,7 @@ export default function VideoAnalyzerForm() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+51987654321"
               disabled={loading}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
+              className="w-full px-3 py-2.5 rounded-xl border border-brand-100 bg-white/90 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
             />
             <p className="text-xs text-slate-500 mt-1">
               Código de país (ej. +51)
@@ -258,15 +286,36 @@ export default function VideoAnalyzerForm() {
         )}
 
         {success && (
-          <div className="p-2.5 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
-            Análisis completado. Revisa tu correo para el PDF.
+          <div className="p-3 rounded-xl bg-brand-50 border border-brand-200 text-brand-800 text-sm space-y-3">
+            <p>Análisis completado. Revisa tu correo para el PDF.</p>
+            {pdfDownloadUrl && (
+              <a
+                href={pdfDownloadUrl}
+                download={pdfFileName}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 border border-brand-200 hover:bg-brand-100 transition-colors"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7,10 12,15 17,10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Descargar PDF
+              </a>
+            )}
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading || !selectedFile || !email.trim()}
-          className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-brand-600 transition-colors flex items-center justify-center gap-2 shadow-[0_20px_40px_-25px_rgba(37,99,235,0.9)]"
         >
           {loading ? (
             <>
@@ -286,22 +335,21 @@ export default function VideoAnalyzerForm() {
       </form>
 
       {success && analysisResult && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5 xl:sticky xl:top-8 xl:self-start overflow-y-auto max-h-[calc(100vh-7rem)]">
-          <h3 className="text-lg font-bold text-slate-800">
+        <div className="app-shell-panel rounded-[30px] p-5 sm:p-6 space-y-5 xl:sticky xl:top-8 xl:self-start overflow-y-auto max-h-[calc(100vh-7rem)]">
+          <h3 className="text-lg font-semibold text-slate-900">
             Resultado del análisis
           </h3>
 
-          {/* Nivel de alerta */}
           {analysisResult.nivel_alerta && (
             <div
-              className={`p-3 rounded-lg border text-center ${
+              className={`p-4 rounded-[24px] border text-center ${
                 analysisResult.nivel_alerta === "critico"
                   ? "bg-red-50 border-red-200"
                   : analysisResult.nivel_alerta === "alto"
                     ? "bg-orange-50 border-orange-200"
                     : analysisResult.nivel_alerta === "moderado"
                       ? "bg-amber-50 border-amber-200"
-                      : "bg-green-50 border-green-200"
+                      : "bg-brand-50 border-brand-200"
               }`}
             >
               <p
@@ -312,7 +360,7 @@ export default function VideoAnalyzerForm() {
                       ? "text-orange-700"
                       : analysisResult.nivel_alerta === "moderado"
                         ? "text-amber-700"
-                        : "text-green-700"
+                        : "text-brand-700"
                 }`}
               >
                 Nivel de alerta: {analysisResult.nivel_alerta.toUpperCase()}
@@ -321,21 +369,21 @@ export default function VideoAnalyzerForm() {
           )}
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
               <p className="text-2xl font-bold text-slate-800">
                 {analysisResult.analisis_general.total_hojas}
               </p>
               <p className="text-xs text-slate-500">Total hojas</p>
             </div>
-            <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-center">
-              <p className="text-2xl font-bold text-green-700">
+            <div className="p-3 rounded-2xl bg-brand-50 border border-brand-200 text-center">
+              <p className="text-2xl font-bold text-brand-700">
                 {analysisResult.analisis_general.sanas}
               </p>
               <p className="text-xs text-slate-500">
                 Sanas ({analysisResult.analisis_general.porcentaje_sanas ?? "-"}%)
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-center">
+            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
               <p className="text-2xl font-bold text-amber-700">
                 {analysisResult.analisis_general.enfermas}
               </p>
@@ -351,23 +399,23 @@ export default function VideoAnalyzerForm() {
               analysisResult.desglose_por_severidad.moderado > 0 ||
               analysisResult.desglose_por_severidad.severo > 0) && (
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
                   Desglose por severidad
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="p-2 rounded-lg bg-yellow-50 border border-yellow-200 text-center">
+                  <div className="p-2 rounded-2xl bg-yellow-50 border border-yellow-200 text-center">
                     <span className="text-lg font-bold text-yellow-700">
                       {analysisResult.desglose_por_severidad.leve}
                     </span>
                     <p className="text-xs text-yellow-600">Leve (&lt;25%)</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-orange-50 border border-orange-200 text-center">
+                  <div className="p-2 rounded-2xl bg-orange-50 border border-orange-200 text-center">
                     <span className="text-lg font-bold text-orange-700">
                       {analysisResult.desglose_por_severidad.moderado}
                     </span>
                     <p className="text-xs text-orange-600">Moderado (25-60%)</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-center">
+                  <div className="p-2 rounded-2xl bg-red-50 border border-red-200 text-center">
                     <span className="text-lg font-bold text-red-700">
                       {analysisResult.desglose_por_severidad.severo}
                     </span>
@@ -381,7 +429,7 @@ export default function VideoAnalyzerForm() {
           {analysisResult.recomendaciones &&
             analysisResult.recomendaciones.length > 0 && (
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
                   Recomendaciones fitosanitarias
                 </p>
                 <ul className="space-y-2 list-decimal list-inside text-sm text-slate-700">
@@ -396,14 +444,14 @@ export default function VideoAnalyzerForm() {
 
           {analysisResult.segmentos_analizados.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
                 Segmentos analizados
               </p>
               <div className="space-y-2">
                 {analysisResult.segmentos_analizados.map((seg, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200 text-sm"
+                    className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm"
                   >
                     <span className="font-mono text-slate-600">
                       {formatSegundo(seg.tiempo_inicio)} – {formatSegundo(seg.tiempo_fin)}
