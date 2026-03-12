@@ -8,6 +8,12 @@ interface VideoSelectorProps {
   onValidationError?: (message: string | null) => void;
   disabled?: boolean;
   error?: string | null;
+  /** URL del video analizado (después del análisis). Muestra reproductor tipo YouTube. */
+  videoUrl?: string | null;
+  /** Ref del video para control externo (ej. seek desde timeline) */
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
+  /** Callback para iniciar nuevo análisis (limpia video y muestra selector) */
+  onNewAnalysis?: () => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -22,6 +28,9 @@ export default function VideoSelector({
   onValidationError,
   disabled = false,
   error = null,
+  videoUrl = null,
+  videoRef,
+  onNewAnalysis,
 }: VideoSelectorProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -130,7 +139,35 @@ export default function VideoSelector({
         className="hidden"
       />
 
-      {!selectedFile ? (
+      {videoUrl ? (
+        <div className="rounded-[28px] border-2 border-brand-200 bg-slate-900 overflow-hidden shadow-lg shadow-brand-500/10">
+          <div className="aspect-video bg-black relative">
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="w-full h-full object-contain"
+              controls
+              controlsList="nodownload"
+              playsInline
+              preload="metadata"
+            />
+          </div>
+          <div className="px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-900 border-t border-slate-700 flex items-center justify-between gap-4">
+            <p className="text-sm font-medium text-slate-300">
+              Video analizado · Haz clic en la línea de tiempo para saltar a momentos clave
+            </p>
+            {onNewAnalysis && (
+              <button
+                type="button"
+                onClick={onNewAnalysis}
+                className="shrink-0 text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                Nuevo análisis
+              </button>
+            )}
+          </div>
+        </div>
+      ) : !selectedFile ? (
         <div
           onClick={handleClick}
           onDrop={handleDrop}

@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getVideoHistory } from "@/service/evaluation";
 import type { VideoAnalisisRecord } from "@/types/evaluation";
 import type { AnalysisResult } from "@/app/llm/types/analysis";
+import { resolveVideoUrl } from "@/lib/prediction-utils";
+import VideoSelector from "../components/VideoSelector";
+import VideoTimeline from "../components/VideoTimeline";
+import AnalysisResultPanel from "../components/AnalysisResultPanel";
 
 function formatDate(d: string) {
   if (!d) return "—";
@@ -35,7 +39,8 @@ function nivelAlertaClass(nivel: string | undefined) {
 export default function VideosHistoryPage() {
   const [videos, setVideos] = useState<VideoAnalisisRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     getVideoHistory()
@@ -58,171 +63,201 @@ export default function VideosHistoryPage() {
     );
   }
 
+  const selected = videos.find((v) => v.id === selectedId);
+  const analysis = selected?.analysis_payload as unknown as AnalysisResult | null;
+  const ag = analysis?.analisis_general;
+  const videoUrl = selected?.video_url ? resolveVideoUrl(selected.video_url) : null;
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 llm-page-grid">
-      <section className="app-shell-panel rounded-[30px] p-6 md:p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Historial de videos
-            </h1>
-            <p className="text-slate-500 text-sm mt-1 leading-6">
-              Análisis de videos con IA vinculados a campañas
-            </p>
-          </div>
-          <Link
-            href="/llm"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-200 transition-colors"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            Nuevo análisis
-          </Link>
-        </div>
-      </section>
-
-      {videos.length === 0 ? (
-        <div className="app-shell-panel rounded-[30px] p-12 text-center">
-          <p className="text-slate-500 text-sm">
-            No hay análisis de videos en el historial.
-          </p>
-          <p className="text-slate-400 text-xs mt-2">
-            Sube un video en Análisis por Video y selecciona una campaña para
-            guardarlo.
-          </p>
-          <Link
-            href="/llm"
-            className="inline-block mt-4 text-sm font-medium text-brand-600 hover:text-brand-700"
-          >
-            Ir a Análisis por Video →
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {videos.map((v) => {
-            const analysis = v.analysis_payload as unknown as AnalysisResult | null;
-            const ag = analysis?.analisis_general;
-            const isExpanded = expandedId === v.id;
-
-            return (
-              <div
-                key={v.id}
-                className="app-shell-panel rounded-[28px] overflow-hidden"
+    <div className="min-h-full w-full llm-page-grid">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+        <section className="app-shell-panel rounded-[30px] p-6 md:p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Historial de videos
+              </h1>
+              <p className="text-slate-500 text-sm mt-1 leading-6">
+                Análisis de videos con IA vinculados a campañas
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/llm"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-200 transition-colors"
               >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Nuevo análisis
+              </Link>
+              {selectedId && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setExpandedId(isExpanded ? null : v.id)
-                  }
-                  className="w-full flex items-center justify-between gap-4 p-5 text-left hover:bg-brand-50/70 transition-colors"
+                  onClick={() => setSelectedId(null)}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center shrink-0">
+                  Volver al listado
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {videos.length === 0 ? (
+          <div className="app-shell-panel rounded-[30px] p-12 text-center">
+            <p className="text-slate-500 text-sm">
+              No hay análisis de videos en el historial.
+            </p>
+            <p className="text-slate-400 text-xs mt-2">
+              Sube un video en Análisis por Video y selecciona una campaña para
+              guardarlo.
+            </p>
+            <Link
+              href="/llm"
+              className="inline-block mt-4 text-sm font-medium text-brand-600 hover:text-brand-700"
+            >
+              Ir a Análisis por Video →
+            </Link>
+          </div>
+        ) : selected && analysis ? (
+          <div
+            className={`grid items-start gap-5 xl:gap-6 ${
+              videoUrl
+                ? "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]"
+                : "grid-cols-1"
+            }`}
+          >
+            <div className="min-w-0 space-y-4">
+              {videoUrl && (
+                <>
+                  <div className="app-shell-panel overflow-hidden rounded-[26px]">
+                    <VideoSelector
+                      selectedFile={null}
+                      onFileChange={() => {}}
+                      videoUrl={videoUrl}
+                      videoRef={videoRef}
+                    />
+                  </div>
+                  {analysis.timeline_anotaciones &&
+                    analysis.timeline_anotaciones.length > 0 && (
+                      <div className="app-shell-panel overflow-hidden rounded-[26px] p-4">
+                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+                          Timeline del video
+                        </p>
+                        <VideoTimeline
+                          videoSrc={videoUrl}
+                          videoRef={videoRef}
+                          timelineAnotaciones={analysis.timeline_anotaciones}
+                        />
+                      </div>
+                    )}
+                </>
+              )}
+              {!videoUrl && (
+                <div className="app-shell-panel rounded-[26px] p-6 text-center text-slate-500">
+                  <p className="text-sm">
+                    Video no disponible para este análisis.
+                  </p>
+                  <p className="text-xs mt-1">
+                    {selected.nombre_archivo || `Video #${selected.id}`}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <AnalysisResultPanel
+              analysis={analysis}
+              title="Resultado del análisis"
+            />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {videos.map((v) => {
+              const a = v.analysis_payload as unknown as AnalysisResult & { metadata_llm?: { model_id: string; response_time_ms: number } } | null;
+              const meta = a?.metadata_llm;
+
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setSelectedId(v.id)}
+                  className="w-full app-shell-panel rounded-[28px] overflow-hidden text-left hover:border-brand-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-4 p-5 hover:bg-brand-50/70 transition-colors">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center shrink-0">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          className="text-brand-700"
+                        >
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-800 truncate">
+                          {v.nombre_archivo || `Video #${v.id}`}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {formatDate(v.fecha)}
+                          {v.periodo_nombre && (
+                            <> · {v.periodo_nombre}</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {a?.analisis_general && (
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${nivelAlertaClass(
+                            a?.nivel_alerta
+                          )}`}
+                        >
+                          {a?.nivel_alerta ?? "bajo"}
+                        </span>
+                      )}
+                      {meta && (
+                        <span className="hidden text-xs text-slate-500 sm:inline">
+                          {meta.model_id} · {meta.response_time_ms.toLocaleString()} ms
+                        </span>
+                      )}
+                      {a?.analisis_general && (
+                        <span className="text-sm text-slate-600">
+                          {a.analisis_general.total_hojas} hojas ·{" "}
+                          {a.analisis_general.enfermas} con Tizón
+                        </span>
+                      )}
                       <svg
-                        width="24"
-                        height="24"
+                        width="20"
+                        height="20"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className="text-brand-700"
+                        className="text-slate-400"
                       >
-                        <polygon points="5 3 19 12 5 21 5 3" />
+                        <polyline points="9 18 15 12 9 6" />
                       </svg>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-800 truncate">
-                        {v.nombre_archivo || `Video #${v.id}`}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {formatDate(v.fecha)}
-                        {v.periodo_nombre && (
-                          <> · {v.periodo_nombre}</>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {ag && (
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${nivelAlertaClass(
-                          analysis?.nivel_alerta
-                        )}`}
-                      >
-                        {analysis?.nivel_alerta ?? "bajo"}
-                      </span>
-                    )}
-                    {ag && (
-                      <span className="text-sm text-slate-600">
-                        {ag.total_hojas} hojas · {ag.enfermas} con Tizón
-                      </span>
-                    )}
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className={`text-slate-400 transition-transform ${
-                        isExpanded ? "rotate-180" : ""
-                      }`}
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
                   </div>
                 </button>
-
-                {isExpanded && analysis && (
-                  <div className="border-t border-brand-100/80 p-5 bg-brand-50/40 space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 rounded-2xl bg-white border border-brand-100 text-center">
-                        <p className="text-2xl font-bold text-slate-800">
-                          {ag?.total_hojas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Total hojas</p>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-white border border-brand-100 text-center">
-                        <p className="text-2xl font-bold text-brand-700">
-                          {ag?.sanas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Sanas</p>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-white border border-amber-200 text-center">
-                        <p className="text-2xl font-bold text-amber-700">
-                          {ag?.enfermas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Con Tizón</p>
-                      </div>
-                    </div>
-                    {analysis.recomendaciones &&
-                      analysis.recomendaciones.length > 0 && (
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Recomendaciones
-                          </p>
-                          <ul className="space-y-1 list-disc list-inside text-sm text-slate-700">
-                            {analysis.recomendaciones.slice(0, 5).map((r, i) => (
-                              <li key={i}>{r}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

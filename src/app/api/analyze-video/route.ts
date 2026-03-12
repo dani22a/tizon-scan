@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
+import { randomUUID } from "crypto";
 import {
   uploadVideoToGemini,
   analyzeVideoWithGemini,
@@ -92,20 +93,37 @@ export async function POST(request: Request) {
     tempPath = path.join(os.tmpdir(), `video-${Date.now()}${ext}`);
 
     const arrayBuffer = await videoFile.arrayBuffer();
-    await fs.writeFile(tempPath, Buffer.from(arrayBuffer));
+    const videoBuffer = Buffer.from(arrayBuffer);
+    await fs.writeFile(tempPath, videoBuffer);
 
     const { fileUri, mimeType } = await uploadVideoToGemini(tempPath, mime);
 
-    const analysisResult = await analyzeVideoWithGemini(
+    const { analysis, modelId: usedModelId, responseTimeMs } = await analyzeVideoWithGemini(
       fileUri,
       mimeType,
       modelId?.trim() || undefined
     );
 
-    const pdfBuffer = await generateReportPdf(analysisResult);
+    const enrichedAnalysis = {
+      ...analysis,
+      metadata_llm: {
+        model_id: usedModelId,
+        response_time_ms: responseTimeMs,
+      },
+    };
+
+    const pdfBuffer = await generateReportPdf(enrichedAnalysis);
     const pdfFileName = "reporte-analisis-papa.pdf";
 
-    const whatsappSummary = phone?.trim() ? buildWhatsAppSummary(analysisResult) : undefined;
+    let videoUrl: string | null = null;
+    const videosDir = path.join(process.cwd(), "public", "videos");
+    await fs.mkdir(videosDir, { recursive: true });
+    const savedFilename = `${randomUUID()}${ext}`;
+    const savedPath = path.join(videosDir, savedFilename);
+    await fs.writeFile(savedPath, videoBuffer);
+    videoUrl = `/videos/${savedFilename}`;
+
+    const whatsappSummary = phone?.trim() ? buildWhatsAppSummary(enrichedAnalysis) : undefined;
 
     await sendReportViaWebhook(
       email.trim(),
@@ -120,7 +138,8 @@ export async function POST(request: Request) {
     const response = {
       success: true,
       message: "Análisis completado. Revisa tu correo para el PDF.",
-      analysis: analysisResult,
+      analysis: enrichedAnalysis,
+      videoUrl,
       pdfBase64: pdfBuffer.toString("base64"),
       pdfFileName,
     };

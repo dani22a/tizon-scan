@@ -43,6 +43,20 @@ export interface TimelineAnotacion {
   recomendacion: string;
 }
 
+/** Métricas de confianza estimadas por el LLM (accuracy, precision, recall, f1_score) */
+export interface MetricasLlm {
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1_score: number;
+}
+
+/** Metadata del agente LLM usado (modelo, tiempo de respuesta) */
+export interface MetadataLlm {
+  model_id: string;
+  response_time_ms: number;
+}
+
 export interface AnalysisResult {
   analisis_general: AnalisisGeneral;
   /** Desglose de hojas enfermas por severidad (leve, moderado, severo) */
@@ -53,4 +67,8 @@ export interface AnalysisResult {
   recomendaciones?: string[];
   segmentos_analizados: SegmentoAnalizado[];
   timeline_anotaciones: TimelineAnotacion[];
+  /** Métricas de confianza estimadas por el LLM (0-1) */
+  metricas_llm?: MetricasLlm;
+  /** Metadata del agente (modelo, tiempo de respuesta) - añadido en backend */
+  metadata_llm?: MetadataLlm;
 }

@@ -55,8 +55,21 @@ Debes responder ÚNICAMENTE con un JSON válido que tenga exactamente esta estru
       "juicio_experto": string,
       "recomendacion": string
     }
-  ]
-}`;
+  ],
+  "metricas_llm": {
+    "accuracy": number,
+    "precision": number,
+    "recall": number,
+    "f1_score": number
+  }
+}
+
+IMPORTANTE: Incluye "metricas_llm" con valores entre 0 y 1. Estima tu confianza en el análisis según:
+- accuracy: proporción de clasificaciones correctas que estimas
+- precision: precisión estimada en las detecciones de enfermedad
+- recall: cobertura estimada de hojas enfermas detectadas
+- f1_score: media armónica de precision y recall
+Ejemplo: {"accuracy": 0.9583, "precision": 0.8841, "recall": 0.8900, "f1_score": 0.9647}`;
 
 export interface UploadResult {
   fileUri: string;
@@ -111,15 +124,22 @@ export async function uploadVideoToGemini(
   }
 }
 
+export interface AnalyzeVideoResult {
+  analysis: AnalysisResult;
+  modelId: string;
+  responseTimeMs: number;
+}
+
 /**
  * Analiza el video con Gemini y retorna el JSON estructurado.
  * Usa el modelo especificado o ListModels para seleccionar uno disponible.
+ * Incluye modelId y tiempo de respuesta para comparativa entre agentes.
  */
 export async function analyzeVideoWithGemini(
   fileUri: string,
   mimeType: string,
   modelId?: string
-): Promise<AnalysisResult> {
+): Promise<AnalyzeVideoResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY no está configurada en las variables de entorno");
@@ -136,6 +156,8 @@ export async function analyzeVideoWithGemini(
     },
   });
 
+  const startTime = Date.now();
+
   const result = await model.generateContent([
     {
       fileData: {
@@ -144,9 +166,11 @@ export async function analyzeVideoWithGemini(
       },
     },
     {
-      text: "Analiza el video frame por frame, identifica cada hoja de papa, clasifica su estado sanitario (sana o con Tizón Tardío), asigna severidad a las enfermas (leve/moderado/severo), calcula porcentajes y genera recomendaciones fitosanitarias. Devuelve el JSON completo.",
+      text: "Analiza el video frame por frame, identifica cada hoja de papa, clasifica su estado sanitario (sana o con Tizón Tardío), asigna severidad a las enfermas (leve/moderado/severo), calcula porcentajes, genera recomendaciones fitosanitarias e incluye metricas_llm (accuracy, precision, recall, f1_score) estimadas. Devuelve el JSON completo.",
     },
   ]);
+
+  const responseTimeMs = Date.now() - startTime;
 
   const response = result.response;
   const text = response.text();
@@ -184,7 +208,20 @@ export async function analyzeVideoWithGemini(
       parsed.nivel_alerta = pct < 10 ? "bajo" : pct < 25 ? "moderado" : pct < 50 ? "alto" : "critico";
     }
 
-    return parsed;
+    if (!parsed.metricas_llm || typeof parsed.metricas_llm.accuracy !== "number") {
+      parsed.metricas_llm = {
+        accuracy: 0,
+        precision: 0,
+        recall: 0,
+        f1_score: 0,
+      };
+    }
+
+    return {
+      analysis: parsed,
+      modelId: modelName,
+      responseTimeMs,
+    };
   } catch (err) {
     if (err instanceof SyntaxError) {
       throw new Error(`Gemini devolvió un JSON inválido: ${text.slice(0, 200)}...`);

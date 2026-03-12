@@ -4,7 +4,10 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import type { TimelineAnotacion } from "../types/analysis";
 
 interface VideoTimelineProps {
-  videoFile: File;
+  /** URL del video (para thumbnails y seek). Puede ser blob URL o /videos/xxx.mp4 */
+  videoSrc: string;
+  /** Ref del video para seek al hacer click en timestamp. Debe apuntar al mismo video que videoSrc. */
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   timelineAnotaciones: TimelineAnotacion[];
 }
 
@@ -20,18 +23,28 @@ function formatSegundo(seg: number): string {
 }
 
 export default function VideoTimeline({
-  videoFile,
+  videoSrc,
+  videoRef,
   timelineAnotaciones,
 }: VideoTimelineProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [items, setItems] = useState<TimelineItemWithFrame[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const seekToSecond = useCallback((segundo: number) => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = segundo;
+      video.play().catch(() => {});
+    }
+  }, [videoRef]);
+
+  const hiddenVideoRef = useRef<HTMLVideoElement>(null);
+
   const captureFrameAt = useCallback(
     (segundo: number): Promise<string | null> => {
       return new Promise((resolve) => {
-        const video = videoRef.current;
+        const video = hiddenVideoRef.current;
         const canvas = canvasRef.current;
         if (!video || !canvas) {
           resolve(null);
@@ -73,12 +86,10 @@ export default function VideoTimeline({
   );
 
   useEffect(() => {
-    const videoUrl = URL.createObjectURL(videoFile);
+    const video = hiddenVideoRef.current;
+    if (!video || !videoSrc) return;
 
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.src = videoUrl;
+    video.src = videoSrc;
 
     const handleLoadedMetadata = async () => {
       const sorted = [...timelineAnotaciones].sort(
@@ -110,10 +121,9 @@ export default function VideoTimeline({
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
-      URL.revokeObjectURL(videoUrl);
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
-  }, [videoFile, timelineAnotaciones, captureFrameAt]);
+  }, [videoSrc, timelineAnotaciones, captureFrameAt]);
 
   if (timelineAnotaciones.length === 0) {
     return null;
@@ -126,7 +136,7 @@ export default function VideoTimeline({
       </h3>
 
       <video
-        ref={videoRef}
+        ref={hiddenVideoRef}
         className="hidden"
         muted
         playsInline
@@ -152,7 +162,11 @@ export default function VideoTimeline({
               className="flex flex-col sm:flex-row gap-4 p-4 rounded-[24px] border border-brand-100 bg-white shadow-sm hover:border-brand-200 transition-colors"
             >
               <div className="shrink-0">
-                <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => seekToSecond(item.segundo)}
+                  className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 block text-left hover:ring-2 hover:ring-brand-500 hover:ring-offset-2 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                >
                   {item.loading ? (
                     <div className="w-full h-full flex items-center justify-center bg-slate-100">
                       <div className="w-8 h-8 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin" />
@@ -168,10 +182,14 @@ export default function VideoTimeline({
                       Sin captura
                     </div>
                   )}
-                </div>
-                <p className="mt-2 text-center text-sm font-semibold text-brand-700">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => seekToSecond(item.segundo)}
+                  className="mt-2 w-full text-center text-sm font-semibold text-brand-700 hover:text-brand-800 hover:underline"
+                >
                   {formatSegundo(item.segundo)}
-                </p>
+                </button>
               </div>
 
               <div className="flex-1 min-w-0 space-y-3">

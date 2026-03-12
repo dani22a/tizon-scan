@@ -69,3 +69,15 @@ export function resolveImageUrl(imagenUrl: string | null | undefined): string {
   }
   return `${API_BASE}/public/predictions/${imagenUrl}`;
 }
+
+/** Resuelve la URL del video para reproductor. Videos en /public/videos usan rutas relativas. */
+export function resolveVideoUrl(videoUrl: string | null | undefined): string {
+  if (!videoUrl) return "";
+  if (videoUrl.startsWith("http://") || videoUrl.startsWith("https://")) {
+    return videoUrl;
+  }
+  if (videoUrl.startsWith("/")) {
+    return videoUrl;
+  }
+  return `/${videoUrl}`;
+}

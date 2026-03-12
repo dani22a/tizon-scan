@@ -17,6 +17,7 @@
     "nodemailer": "^8.0.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "recharts": "^3.8.0",
     "sonner": "^2.0.7",
     "zustand": "^5.0.11"
   },

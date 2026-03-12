@@ -41,14 +41,18 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-green-50 to-emerald-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          {/* Header con temática de papa */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.14),transparent_26%)]" />
+      <div className="relative w-full max-w-[420px]">
+        <div className="app-shell-panel space-y-5 rounded-[28px] p-1.5">
+          <div className="rounded-[24px] bg-linear-to-br from-brand-950 via-brand-900 to-brand-700 px-5 py-5 text-white">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-brand-100/75">
+              Access node
+            </p>
+            <div className="mt-3 flex items-start gap-3">
+              <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/15">
               <svg
-                className="w-10 h-10 text-green-600"
+                className="h-6 w-6 text-brand-100"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -61,20 +65,25 @@ export default function Login() {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Detección de Tizón Tardío
-            </h1>
-            <p className="text-sm text-gray-500">
-              Sistema de monitoreo de enfermedades en papa
-            </p>
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                  Detección de Tizón Tardío
+                </h1>
+                <p className="mt-1 text-sm leading-5 text-brand-100/80">
+                  Accede al panel de análisis visual, monitoreo e historial de videos.
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 rounded-[24px] border border-slate-100/80 bg-white/55 p-4"
+          >
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
               >
                 Email
               </label>
@@ -84,7 +93,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                className="w-full rounded-xl border border-brand-100 bg-white/90 px-3 py-2.5 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500"
                 disabled={loading}
               />
             </div>
@@ -92,7 +101,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
               >
                 Contraseña
               </label>
@@ -102,13 +111,13 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                className="w-full rounded-xl border border-brand-100 bg-white/90 px-3 py-2.5 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500"
                 disabled={loading}
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
                 {error}
               </div>
             )}
@@ -116,7 +125,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -146,6 +155,10 @@ export default function Login() {
                 "Iniciar Sesión"
               )}
             </button>
+
+            <p className="text-center text-[11px] leading-5 text-slate-500">
+              Ingresa con tus credenciales para continuar al entorno de análisis.
+            </p>
           </form>
         </div>
       </div>

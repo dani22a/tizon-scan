@@ -7,6 +7,8 @@ import {
   Camera,
   ArrowLeft,
   Rows3,
+  Activity,
+  Info,
 } from "@/components/ui-icons";
 
 interface SidebarProps {
@@ -100,6 +102,16 @@ const navGroups: NavGroup[] = [
         label: "Análisis por Video",
         path: "/llm",
         icon: <Camera />,
+      },
+      {
+        label: "Campañas",
+        path: "/llm/campaigns",
+        icon: <Activity />,
+      },
+      {
+        label: "Agentes",
+        path: "/llm/agentes",
+        icon: <Info />,
       },
       {
         label: "Historial de Videos",

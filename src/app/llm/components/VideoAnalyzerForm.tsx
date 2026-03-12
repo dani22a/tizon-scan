@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import VideoTimeline from "./VideoTimeline";
 import VideoSelector from "./VideoSelector";
 import ModelSelector from "./ModelSelector";
+import AnalysisResultPanel from "./AnalysisResultPanel";
 import { getPeriodos, saveVideoAnalisis } from "@/service/evaluation";
 import type { Periodo } from "@/types/evaluation";
 import type { AnalysisResult } from "../types/analysis";
@@ -22,9 +23,10 @@ export default function VideoAnalyzerForm() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
-  const [videoForTimeline, setVideoForTimeline] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("reporte-analisis-papa.pdf");
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     return () => {
@@ -57,7 +59,7 @@ export default function VideoAnalyzerForm() {
     setError(null);
     setSuccess(false);
     setAnalysisResult(null);
-    setVideoForTimeline(null);
+    setVideoUrl(null);
     if (pdfDownloadUrl) {
       URL.revokeObjectURL(pdfDownloadUrl);
       setPdfDownloadUrl(null);
@@ -110,13 +112,16 @@ export default function VideoAnalyzerForm() {
       setSuccess(true);
       if (data.analysis) {
         setAnalysisResult(data.analysis);
-        setVideoForTimeline(selectedFile);
+        if (data.videoUrl) {
+          setVideoUrl(data.videoUrl);
+        }
 
         const periodoId =
           selectedPeriodoId !== "" ? Number(selectedPeriodoId) : null;
         saveVideoAnalisis({
           periodo_id: periodoId,
           nombre_archivo: selectedFile.name,
+          video_url: data.videoUrl ?? null,
           analysis_payload: data.analysis as Record<string, unknown>,
         }).catch((err) => {
           console.warn("No se pudo guardar en historial:", err);
@@ -147,10 +152,16 @@ export default function VideoAnalyzerForm() {
     }
   };
 
-  const formatSegundo = (seg: number) => {
-    const m = Math.floor(seg / 60);
-    const s = Math.floor(seg % 60);
-    return `${m}:${s.toString().padStart(2, "0")}`;
+  const handleNewAnalysis = () => {
+    setSuccess(false);
+    setAnalysisResult(null);
+    setVideoUrl(null);
+    setSelectedFile(null);
+    if (pdfDownloadUrl) {
+      URL.revokeObjectURL(pdfDownloadUrl);
+      setPdfDownloadUrl(null);
+    }
+    setPdfFileName("reporte-analisis-papa.pdf");
   };
 
   const hasResult = success && analysisResult;
@@ -171,16 +182,20 @@ export default function VideoAnalyzerForm() {
             onValidationError={handleValidationError}
             disabled={loading}
             error={error === "Solo se permiten archivos .mp4 o .mov" ? error : null}
+            videoUrl={videoUrl}
+            videoRef={videoRef}
+            onNewAnalysis={handleNewAnalysis}
           />
         </div>
 
-        {success && videoForTimeline && analysisResult?.timeline_anotaciones && analysisResult.timeline_anotaciones.length > 0 && (
+        {success && videoUrl && analysisResult?.timeline_anotaciones && analysisResult.timeline_anotaciones.length > 0 && (
           <div className="app-shell-panel overflow-hidden rounded-[26px] p-4">
             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
               Timeline del video
             </p>
             <VideoTimeline
-              videoFile={videoForTimeline}
+              videoSrc={videoUrl}
+              videoRef={videoRef}
               timelineAnotaciones={analysisResult.timeline_anotaciones}
             />
           </div>
@@ -337,148 +352,7 @@ export default function VideoAnalyzerForm() {
       </form>
 
       {success && analysisResult && (
-        <div className="app-shell-panel max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto rounded-[26px] p-4 sm:p-5 xl:sticky xl:top-6 xl:self-start">
-          <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
-            Resultado del análisis
-          </h3>
-
-          {analysisResult.nivel_alerta && (
-            <div
-              className={`p-4 rounded-[24px] border text-center ${
-                analysisResult.nivel_alerta === "critico"
-                  ? "bg-red-50 border-red-200"
-                  : analysisResult.nivel_alerta === "alto"
-                    ? "bg-orange-50 border-orange-200"
-                    : analysisResult.nivel_alerta === "moderado"
-                      ? "bg-amber-50 border-amber-200"
-                      : "bg-brand-50 border-brand-200"
-              }`}
-            >
-              <p
-                className={`text-lg font-bold ${
-                  analysisResult.nivel_alerta === "critico"
-                    ? "text-red-700"
-                    : analysisResult.nivel_alerta === "alto"
-                      ? "text-orange-700"
-                      : analysisResult.nivel_alerta === "moderado"
-                        ? "text-amber-700"
-                        : "text-brand-700"
-                }`}
-              >
-                Nivel de alerta: {analysisResult.nivel_alerta.toUpperCase()}
-              </p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-              <p className="text-2xl font-bold text-slate-800">
-                {analysisResult.analisis_general.total_hojas}
-              </p>
-              <p className="text-xs text-slate-500">Total hojas</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-brand-50 border border-brand-200 text-center">
-              <p className="text-2xl font-bold text-brand-700">
-                {analysisResult.analisis_general.sanas}
-              </p>
-              <p className="text-xs text-slate-500">
-                Sanas ({analysisResult.analisis_general.porcentaje_sanas ?? "-"}%)
-              </p>
-            </div>
-            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-              <p className="text-2xl font-bold text-amber-700">
-                {analysisResult.analisis_general.enfermas}
-              </p>
-              <p className="text-xs text-slate-500">
-                Tizón Tardío ({analysisResult.analisis_general.porcentaje_enfermas ?? "-"}%)
-              </p>
-            </div>
-          </div>
-
-          {/* Desglose por severidad */}
-          {analysisResult.desglose_por_severidad &&
-            (analysisResult.desglose_por_severidad.leve > 0 ||
-              analysisResult.desglose_por_severidad.moderado > 0 ||
-              analysisResult.desglose_por_severidad.severo > 0) && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
-                  Desglose por severidad
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="p-2 rounded-2xl bg-yellow-50 border border-yellow-200 text-center">
-                    <span className="text-lg font-bold text-yellow-700">
-                      {analysisResult.desglose_por_severidad.leve}
-                    </span>
-                    <p className="text-xs text-yellow-600">Leve (&lt;25%)</p>
-                  </div>
-                  <div className="p-2 rounded-2xl bg-orange-50 border border-orange-200 text-center">
-                    <span className="text-lg font-bold text-orange-700">
-                      {analysisResult.desglose_por_severidad.moderado}
-                    </span>
-                    <p className="text-xs text-orange-600">Moderado (25-60%)</p>
-                  </div>
-                  <div className="p-2 rounded-2xl bg-red-50 border border-red-200 text-center">
-                    <span className="text-lg font-bold text-red-700">
-                      {analysisResult.desglose_por_severidad.severo}
-                    </span>
-                    <p className="text-xs text-red-600">Severo (&gt;60%)</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          {/* Recomendaciones fitosanitarias */}
-          {analysisResult.recomendaciones &&
-            analysisResult.recomendaciones.length > 0 && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
-                  Recomendaciones fitosanitarias
-                </p>
-                <ul className="space-y-2 list-decimal list-inside text-sm text-slate-700">
-                  {analysisResult.recomendaciones.map((rec, idx) => (
-                    <li key={idx} className="pl-1">
-                      {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          {analysisResult.segmentos_analizados.length > 0 && (
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400 mb-2">
-                Segmentos analizados
-              </p>
-              <div className="space-y-2">
-                {analysisResult.segmentos_analizados.map((seg, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm"
-                  >
-                    <span className="font-mono text-slate-600">
-                      {formatSegundo(seg.tiempo_inicio)} – {formatSegundo(seg.tiempo_fin)}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        seg.enfermedad_detectada === "ninguna"
-                          ? "bg-slate-200 text-slate-600"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {seg.enfermedad_detectada}
-                    </span>
-                    <span className="text-slate-500 text-xs">
-                      {seg.confianza_porcentaje <= 1
-                        ? `${(seg.confianza_porcentaje * 100).toFixed(0)}%`
-                        : `${seg.confianza_porcentaje}%`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
+        <AnalysisResultPanel analysis={analysisResult} />
       )}
     </div>
   );

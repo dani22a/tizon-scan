@@ -19,6 +19,11 @@
   --color-brand-800: #1e40af;
   --color-brand-900: #172554;
   --color-brand-950: #0f172a;
+  --color-chart-1: #2563eb;
+  --color-chart-2: #f59e0b;
+  --color-chart-3: #ef4444;
+  --color-chart-4: #22c55e;
+  --color-chart-5: #8b5cf6;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

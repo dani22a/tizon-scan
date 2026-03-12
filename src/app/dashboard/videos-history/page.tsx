@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getVideoHistory } from "@/service/evaluation";
 import type { VideoAnalisisRecord } from "@/types/evaluation";
 import type { AnalysisResult } from "@/app/llm/types/analysis";
+import { resolveVideoUrl } from "@/lib/prediction-utils";
+import VideoSelector from "@/app/llm/components/VideoSelector";
+import VideoTimeline from "@/app/llm/components/VideoTimeline";
+import AnalysisResultPanel from "@/app/llm/components/AnalysisResultPanel";
 
 function formatDate(d: string) {
   if (!d) return "—";
@@ -28,14 +32,15 @@ function nivelAlertaClass(nivel: string | undefined) {
     case "moderado":
       return "bg-amber-100 text-amber-800";
     default:
-      return "bg-green-100 text-green-800";
+      return "bg-brand-100 text-brand-800";
   }
 }
 
 export default function VideosHistoryPage() {
   const [videos, setVideos] = useState<VideoAnalisisRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     getVideoHistory()
@@ -51,15 +56,19 @@ export default function VideosHistoryPage() {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
           <p className="text-slate-500 text-sm">Cargando historial de videos...</p>
         </div>
       </div>
     );
   }
 
+  const selected = videos.find((v) => v.id === selectedId);
+  const analysis = selected?.analysis_payload as unknown as AnalysisResult | null;
+  const videoUrl = selected?.video_url ? resolveVideoUrl(selected.video_url) : null;
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1680px] mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
@@ -69,22 +78,33 @@ export default function VideosHistoryPage() {
             Análisis de videos con IA vinculados a campañas
           </p>
         </div>
-        <Link
-          href="/llm"
-          className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-900"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="flex items-center gap-3">
+          <Link
+            href="/llm"
+            className="inline-flex items-center gap-2 text-sm font-medium text-brand-700 hover:text-brand-900"
           >
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          Nuevo análisis
-        </Link>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Nuevo análisis
+          </Link>
+          {selectedId && (
+            <button
+              type="button"
+              onClick={() => setSelectedId(null)}
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800"
+            >
+              Volver al listado
+            </button>
+          )}
+        </div>
       </div>
 
       {videos.length === 0 ? (
@@ -98,32 +118,78 @@ export default function VideosHistoryPage() {
           </p>
           <Link
             href="/llm"
-            className="inline-block mt-4 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="inline-block mt-4 text-sm font-medium text-brand-600 hover:text-brand-700"
           >
             Ir a Análisis por Video →
           </Link>
         </div>
+      ) : selected && analysis ? (
+        <div
+          className={`grid items-start gap-5 xl:gap-6 ${
+            videoUrl
+              ? "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]"
+              : "grid-cols-1"
+          }`}
+        >
+          <div className="min-w-0 space-y-4">
+            {videoUrl && (
+              <>
+                <div className="rounded-[26px] border border-slate-200 bg-white overflow-hidden">
+                  <VideoSelector
+                    selectedFile={null}
+                    onFileChange={() => {}}
+                    videoUrl={videoUrl}
+                    videoRef={videoRef}
+                  />
+                </div>
+                {analysis.timeline_anotaciones &&
+                  analysis.timeline_anotaciones.length > 0 && (
+                    <div className="rounded-[26px] border border-slate-200 bg-white p-4">
+                      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+                        Timeline del video
+                      </p>
+                      <VideoTimeline
+                        videoSrc={videoUrl}
+                        videoRef={videoRef}
+                        timelineAnotaciones={analysis.timeline_anotaciones}
+                      />
+                    </div>
+                  )}
+              </>
+            )}
+            {!videoUrl && (
+              <div className="rounded-[26px] border border-slate-200 bg-white p-6 text-center text-slate-500">
+                <p className="text-sm">
+                  Video no disponible para este análisis.
+                </p>
+                <p className="text-xs mt-1">
+                  {selected.nombre_archivo || `Video #${selected.id}`}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <AnalysisResultPanel
+            analysis={analysis}
+            title="Resultado del análisis"
+          />
+        </div>
       ) : (
         <div className="space-y-3">
           {videos.map((v) => {
-            const analysis = v.analysis_payload as unknown as AnalysisResult | null;
-            const ag = analysis?.analisis_general;
-            const isExpanded = expandedId === v.id;
+            const a = v.analysis_payload as unknown as AnalysisResult & { metadata_llm?: { model_id: string; response_time_ms: number } } | null;
+            const meta = a?.metadata_llm;
 
             return (
-              <div
+              <button
                 key={v.id}
-                className="rounded-xl border border-slate-200 bg-white overflow-hidden"
+                type="button"
+                onClick={() => setSelectedId(v.id)}
+                className="w-full rounded-xl border border-slate-200 bg-white overflow-hidden text-left hover:border-brand-300 hover:bg-brand-50/30 transition-colors"
               >
-                <button
-                  type="button"
-                  onClick={() =>
-                    setExpandedId(isExpanded ? null : v.id)
-                  }
-                  className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-slate-50 transition-colors"
-                >
+                <div className="flex items-center justify-between gap-4 p-4">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
                       <svg
                         width="24"
                         height="24"
@@ -131,7 +197,7 @@ export default function VideosHistoryPage() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className="text-emerald-600"
+                        className="text-brand-700"
                       >
                         <polygon points="5 3 19 12 5 21 5 3" />
                       </svg>
@@ -149,18 +215,24 @@ export default function VideosHistoryPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {ag && (
+                    {a?.analisis_general && (
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${nivelAlertaClass(
-                          analysis?.nivel_alerta
+                          a?.nivel_alerta
                         )}`}
                       >
-                        {analysis?.nivel_alerta ?? "bajo"}
+                        {a?.nivel_alerta ?? "bajo"}
                       </span>
                     )}
-                    {ag && (
+                    {meta && (
+                      <span className="hidden text-xs text-slate-500 sm:inline">
+                        {meta.model_id} · {meta.response_time_ms.toLocaleString()} ms
+                      </span>
+                    )}
+                    {a?.analisis_general && (
                       <span className="text-sm text-slate-600">
-                        {ag.total_hojas} hojas · {ag.enfermas} con Tizón
+                        {a.analisis_general.total_hojas} hojas ·{" "}
+                        {a.analisis_general.enfermas} con Tizón
                       </span>
                     )}
                     <svg
@@ -170,53 +242,13 @@ export default function VideosHistoryPage() {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className={`text-slate-400 transition-transform ${
-                        isExpanded ? "rotate-180" : ""
-                      }`}
+                      className="text-slate-400"
                     >
-                      <polyline points="6 9 12 15 18 9" />
+                      <polyline points="9 18 15 12 9 6" />
                     </svg>
                   </div>
-                </button>
-
-                {isExpanded && analysis && (
-                  <div className="border-t border-slate-200 p-4 bg-slate-50/50 space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 rounded-lg bg-white border border-slate-200 text-center">
-                        <p className="text-2xl font-bold text-slate-800">
-                          {ag?.total_hojas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Total hojas</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white border border-slate-200 text-center">
-                        <p className="text-2xl font-bold text-green-700">
-                          {ag?.sanas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Sanas</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white border border-slate-200 text-center">
-                        <p className="text-2xl font-bold text-amber-700">
-                          {ag?.enfermas ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500">Con Tizón</p>
-                      </div>
-                    </div>
-                    {analysis.recomendaciones &&
-                      analysis.recomendaciones.length > 0 && (
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Recomendaciones
-                          </p>
-                          <ul className="space-y-1 list-disc list-inside text-sm text-slate-700">
-                            {analysis.recomendaciones.slice(0, 5).map((r, i) => (
-                              <li key={i}>{r}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                  </div>
-                )}
-              </div>
+                </div>
+              </button>
             );
           })}
         </div>
