@@ -10,7 +10,7 @@ export default function Home() {
     // Verificar si hay token, si no redirigir al login
     const token = localStorage.getItem("token");
     if (token) {
-      router.push("/dashboard");
+      router.push("/llm/dashboard");
     } else {
       router.push("/login");
     }

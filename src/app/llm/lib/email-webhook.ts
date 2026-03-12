@@ -36,7 +36,7 @@ export async function sendReportViaWebhook(
 
   const payload: WebhookEmailPayload = {
     email,
-    subject: subject ?? "Reporte de Análisis de Enfermedades en Papa - AgroVision",
+    subject: subject ?? "Reporte de Análisis de Enfermedades en Papa - Tizon Scan",
     title: title ?? "Reporte de Análisis de Video",
     pdf: base64,
     filename,

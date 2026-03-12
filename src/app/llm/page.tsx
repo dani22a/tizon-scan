@@ -1,16 +1,9 @@
 import VideoAnalyzerForm from "./components/VideoAnalyzerForm";
-import Link from "next/link";
 
 export default function LlmPage() {
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center text-sm text-slate-600 hover:text-emerald-700 mb-6"
-        >
-          ← Volver al dashboard
-        </Link>
+    <div className="min-h-full w-full">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <VideoAnalyzerForm />
       </div>
     </div>

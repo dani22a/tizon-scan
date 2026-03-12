@@ -28,7 +28,7 @@ export default function Login() {
       // Guardar el token en localStorage
       if (response.token) {
         localStorage.setItem("token", response.token);
-        router.push("/dashboard");
+        router.push("/llm/dashboard");
       }
     } catch (err: any) {
       setError(

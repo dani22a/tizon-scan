@@ -41,7 +41,7 @@ export async function sendReportEmail(
   await transporter.sendMail({
     from: from,
     to,
-    subject: "Reporte de Análisis de Enfermedades en Papa - AgroVision",
+    subject: "Reporte de Análisis de Enfermedades en Papa - Tizon Scan",
     text: "Adjunto encontrará el reporte de análisis de su video de cultivo de papa. El documento incluye la detección de Tizón temprano (Alternaria solani) y Tizón tardío (Phytophthora infestans).",
     html: `
       <p>Adjunto encontrará el reporte de análisis de su video de cultivo de papa.</p>
@@ -50,7 +50,7 @@ export async function sendReportEmail(
         <li>Tizón temprano (Alternaria solani)</li>
         <li>Tizón tardío (Phytophthora infestans)</li>
       </ul>
-      <p>Saludos,<br/>Equipo AgroVision</p>
+      <p>Saludos,<br/>Equipo Tizon Scan</p>
     `,
     attachments: [
       {

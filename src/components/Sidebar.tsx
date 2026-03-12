@@ -31,75 +31,85 @@ type NavGroup = {
 };
 
 const navGroups: NavGroup[] = [
-  {
-    heading: "General",
-    items: [{ label: "Dashboard", path: "/dashboard", icon: <Layers /> }],
-  },
-  {
-    heading: "Evaluación",
-    items: [
-      {
-        label: "Evaluación Completa",
-        path: "/dashboard/evaluation-complete",
-        icon: <CheckCircle />,
-      },
-      {
-        label: "Evaluación por Bloques",
-        path: "/dashboard/evaluation-batch",
-        icon: <CheckCircle />,
-      },
-      { label: "Tiempo Real", path: "/dashboard/realtime", icon: <Camera /> },
-      {
-        label: "Historial de Predicciones",
-        path: "/dashboard/history",
-        icon: <Rows3 />,
-      },
-    ],
-  },
-  {
-    heading: "Cultivo",
-    items: [
-      { label: "Módulos", path: "/dashboard/modulos", icon: <Map /> },
-      { label: "Periodos", path: "/dashboard/periodos", icon: <Layers /> },
-    ],
-  },
-  {
-    heading: "Diagnóstico",
-    items: [
-      {
-        label: "Diagnóstico Global",
-        path: "/dashboard/diagnosis",
-        icon: <Activity />,
-      },
-      {
-        label: "Historial de Diagnósticos",
-        path: "/dashboard/diagnosis-history",
-        icon: <Rows3 />,
-      },
-    ],
-  },
-  {
-    heading: "Clima y Datos",
-    items: [
-      {
-        label: "Recomendaciones Climáticas",
-        path: "/dashboard/recommendations",
-        icon: <Info />,
-      },
-      {
-        label: "Dataset y Modelos",
-        path: "/dashboard/dataset",
-        icon: <ImageIcon />,
-      },
-    ],
-  },
+  // {
+  //   heading: "General",
+  //   items: [{ label: "Dashboard", path: "/dashboard", icon: <Layers /> }],
+  // },
+  // {
+  //   heading: "Evaluación",
+  //   items: [
+  //     {
+  //       label: "Evaluación Completa",
+  //       path: "/dashboard/evaluation-complete",
+  //       icon: <CheckCircle />,
+  //     },
+  //     {
+  //       label: "Evaluación por Bloques",
+  //       path: "/dashboard/evaluation-batch",
+  //       icon: <CheckCircle />,
+  //     },
+  //     { label: "Tiempo Real", path: "/dashboard/realtime", icon: <Camera /> },
+  //     {
+  //       label: "Historial de Predicciones",
+  //       path: "/dashboard/history",
+  //       icon: <Rows3 />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   heading: "Cultivo",
+  //   items: [
+  //     { label: "Módulos", path: "/dashboard/modulos", icon: <Map /> },
+  //     { label: "Periodos", path: "/dashboard/periodos", icon: <Layers /> },
+  //   ],
+  // },
+  // {
+  //   heading: "Diagnóstico",
+  //   items: [
+  //     {
+  //       label: "Diagnóstico Global",
+  //       path: "/dashboard/diagnosis",
+  //       icon: <Activity />,
+  //     },
+  //     {
+  //       label: "Historial de Diagnósticos",
+  //       path: "/dashboard/diagnosis-history",
+  //       icon: <Rows3 />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   heading: "Clima y Datos",
+  //   items: [
+  //     {
+  //       label: "Recomendaciones Climáticas",
+  //       path: "/dashboard/recommendations",
+  //       icon: <Info />,
+  //     },
+  //     {
+  //       label: "Dataset y Modelos",
+  //       path: "/dashboard/dataset",
+  //       icon: <ImageIcon />,
+  //     },
+  //   ],
+  // },
   {
     heading: "Análisis IA",
     items: [
       {
+        label: "Dashboard",
+        path: "/llm/dashboard",
+        icon: <Layers />,
+      },
+      {
         label: "Análisis por Video",
         path: "/llm",
         icon: <Camera />,
+      },
+      {
+        label: "Historial de Videos",
+        path: "/llm/videos-history",
+        icon: <Rows3 />,
       },
     ],
   },
@@ -144,7 +154,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 let active = false;
-                if (item.path === "/dashboard") {
+                if (item.path === "/llm") {
+                  active = pathname === "/llm";
+                } else if (item.path === "/dashboard") {
                   active =
                     pathname === "/dashboard" || pathname === "/dashboard/";
                 } else {

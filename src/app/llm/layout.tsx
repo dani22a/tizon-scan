@@ -1,17 +1,16 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Leaf, Menu } from "@/components/ui-icons";
 import Sidebar from "@/components/Sidebar";
 
-export default function DashboardLayout({
+export default function LlmLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -32,8 +31,6 @@ export default function DashboardLayout({
     );
   }
 
-  // sidebar handled by dedicated component
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/login");
@@ -52,7 +49,7 @@ export default function DashboardLayout({
             </button>
             <button
               className="flex items-center space-x-2"
-              onClick={() => router.push("/llm")}
+              onClick={() => router.push("/llm/dashboard")}
             >
               <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
                 <Leaf size={20} />
