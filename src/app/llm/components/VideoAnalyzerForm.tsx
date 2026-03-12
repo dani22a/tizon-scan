@@ -126,30 +126,55 @@ export default function VideoAnalyzerForm() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  const hasResult = success && analysisResult;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(400px,480px)] gap-8 items-start">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6 shrink-0"
-      >
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">
-            Análisis de video con IA
-          </h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Sube un video de hojas de papa para diagnosticar masivamente Tizón Tardío (Phytophthora infestans).
-            Por cada hoja se estima severidad (leve/moderado/severo) y se generan recomendaciones fitosanitarias.
-            El reporte detallado se envía por correo y un resumen por WhatsApp.
-          </p>
+    <div
+      className={`grid gap-6 xl:gap-8 items-start ${
+        hasResult
+          ? "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(320px,380px)_minmax(320px,400px)]"
+          : "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]"
+      }`}
+    >
+      {/* Columna izquierda: video + resultado (cuando hay) */}
+      <div className="space-y-6 min-w-0">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <VideoSelector
+            selectedFile={selectedFile}
+            onFileChange={handleFileChange}
+            onValidationError={handleValidationError}
+            disabled={loading}
+            error={error === "Solo se permiten archivos .mp4 o .mov" ? error : null}
+          />
         </div>
 
-        <VideoSelector
-          selectedFile={selectedFile}
-          onFileChange={handleFileChange}
-          onValidationError={handleValidationError}
-          disabled={loading}
-          error={error === "Solo se permiten archivos .mp4 o .mov" ? error : null}
-        />
+        {success && videoForTimeline && analysisResult?.timeline_anotaciones && analysisResult.timeline_anotaciones.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-hidden">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              Timeline del video
+            </p>
+            <VideoTimeline
+              videoFile={videoForTimeline}
+              timelineAnotaciones={analysisResult.timeline_anotaciones}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Columna derecha: formulario */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4 xl:sticky xl:top-8 xl:self-start"
+      >
+        <div>
+          <h2 className="text-lg font-bold text-slate-800">
+            Análisis de video con IA
+          </h2>
+          <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+            Sube un video de hojas de papa para diagnosticar masivamente Tizón Tardío.
+            El reporte se envía por correo y resumen por WhatsApp.
+          </p>
+        </div>
 
         <ModelSelector
           value={selectedModel}
@@ -160,7 +185,7 @@ export default function VideoAnalyzerForm() {
         <div>
           <label
             htmlFor="periodo"
-            className="block text-sm font-medium text-slate-700 mb-2"
+            className="block text-sm font-medium text-slate-700 mb-1.5"
           >
             Campaña (periodo)
           </label>
@@ -171,7 +196,7 @@ export default function VideoAnalyzerForm() {
               setSelectedPeriodoId(e.target.value === "" ? "" : Number(e.target.value))
             }
             disabled={loading}
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 disabled:opacity-50"
+            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm disabled:opacity-50"
           >
             <option value="">Sin campaña</option>
             {periodos.map((p) => (
@@ -181,58 +206,59 @@ export default function VideoAnalyzerForm() {
             ))}
           </select>
           <p className="text-xs text-slate-500 mt-1">
-            Vincula el análisis a una campaña para guardarlo en el historial
+            Vincula el análisis a una campaña para el historial
           </p>
         </div>
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-slate-700 mb-2"
-          >
-            Correo electrónico
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@correo.com"
-            required
-            disabled={loading}
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 placeholder:text-slate-400 disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium text-slate-700 mb-2"
-          >
-            Teléfono (WhatsApp, opcional)
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+51987654321"
-            disabled={loading}
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 placeholder:text-slate-400 disabled:opacity-50"
-          />
-          <p className="text-xs text-slate-500 mt-1">
-            Incluye código de país (ej. +51 para Perú)
-          </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Correo electrónico
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              required
+              disabled={loading}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Teléfono (WhatsApp)
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+51987654321"
+              disabled={loading}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Código de país (ej. +51)
+            </p>
+          </div>
         </div>
 
         {error && error !== "Solo se permiten archivos .mp4 o .mov" && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+          <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+          <div className="p-2.5 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
             Análisis completado. Revisa tu correo para el PDF.
           </div>
         )}
@@ -240,12 +266,12 @@ export default function VideoAnalyzerForm() {
         <button
           type="submit"
           disabled={loading || !selectedFile || !email.trim()}
-          className="w-full py-3 px-4 rounded-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
-              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Analizando video... Esto puede tomar varios minutos
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Analizando... Espera unos minutos
             </>
           ) : (
             "Analizar y enviar reporte"
@@ -253,15 +279,14 @@ export default function VideoAnalyzerForm() {
         </button>
 
         {loading && (
-          <p className="text-center text-sm text-slate-500">
-            El proceso incluye subida del video, análisis con Gemini y generación
-            del PDF. Por favor espera.
+          <p className="text-center text-xs text-slate-500">
+            Subida, análisis con Gemini y generación del PDF.
           </p>
         )}
       </form>
 
       {success && analysisResult && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6 lg:sticky lg:top-8 overflow-y-auto max-h-[calc(100vh-8rem)]">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5 xl:sticky xl:top-8 xl:self-start overflow-y-auto max-h-[calc(100vh-7rem)]">
           <h3 className="text-lg font-bold text-slate-800">
             Resultado del análisis
           </h3>
@@ -403,14 +428,6 @@ export default function VideoAnalyzerForm() {
             </div>
           )}
 
-          {videoForTimeline &&
-            analysisResult.timeline_anotaciones &&
-            analysisResult.timeline_anotaciones.length > 0 && (
-              <VideoTimeline
-                videoFile={videoForTimeline}
-                timelineAnotaciones={analysisResult.timeline_anotaciones}
-              />
-            )}
         </div>
       )}
     </div>

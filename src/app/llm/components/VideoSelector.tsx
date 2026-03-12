@@ -147,8 +147,8 @@ export default function VideoSelector({
           `}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-emerald-600/5 pointer-events-none" />
-          <div className="relative flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center mb-4 shadow-inner">
+          <div className="relative flex flex-col items-center justify-center py-10 sm:py-12 px-6 text-center min-h-[180px]">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center mb-3 sm:mb-4 shadow-inner">
               <svg
                 className="w-8 h-8 text-emerald-600"
                 fill="none"
