@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tizon Scan (Frontend) - Levantar sin Docker
 
-## Getting Started
+Guia completa para ejecutar el frontend localmente con Node.js.
 
-First, run the development server:
+## 1) Instalar Node.js
+
+Version recomendada: **Node.js 20 LTS** (o superior compatible con Next.js 16).
+
+### Windows
+1. Descarga Node.js LTS:
+   - [https://nodejs.org/](https://nodejs.org/)
+2. Instala con las opciones por defecto.
+3. Verifica:
+
+```bash
+node --version
+npm --version
+```
+
+## 2) Instalar dependencias del proyecto
+
+Desde la carpeta `tizon-scan`:
+
+```bash
+npm install
+```
+
+## 3) Configurar variables de entorno
+
+Crea un archivo `.env.local` en la raiz del proyecto con estas variables:
+
+```env
+NEXT_PUBLIC_BACKEND_URL=http://localhost:4000/api/v1
+OPENWEATHER_API_KEY=
+GEMINI_API_KEY=
+NEXT_PUBLIC_SEND_EMAIL_WEBHOOK=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+NEXT_PUBLIC_ROBOFLOW_PUBLISHABLE_KEY=
+```
+
+Notas:
+- `NEXT_PUBLIC_BACKEND_URL` debe apuntar al backend `service-tizon-scan`.
+- Las variables vacias pueden completarse cuando integres esos servicios.
+
+## 4) Levantar en desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La aplicacion estara disponible en:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `http://localhost:3000`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 5) Build de produccion (opcional)
 
-## Learn More
+Construir:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ejecutar build:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run start
+```
 
-## Deploy on Vercel
+## 6) Problemas comunes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Error de CORS o APIs fallando:
+  - revisa que el backend este activo en `http://localhost:4000`.
+  - valida `NEXT_PUBLIC_BACKEND_URL` en `.env.local`.
+- Error por version de Node:
+  - actualiza a Node 20 LTS y reinstala dependencias.
+- Cambiaste variables y no impacta:
+  - reinicia `npm run dev` para recargar `env`.

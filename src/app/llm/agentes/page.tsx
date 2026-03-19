@@ -138,7 +138,7 @@ export default function AgentesPage() {
                     <tr className="border-b border-slate-200">
                       <th className="pb-3 text-left font-semibold text-slate-700">Modelo</th>
                       <th className="pb-3 text-right font-semibold text-slate-700">Consultas</th>
-                      <th className="pb-3 text-right font-semibold text-slate-700">Tiempo (ms)</th>
+                      <th className="pb-3 text-right font-semibold text-slate-700">Tiempo promedio (ms)</th>
                       <th className="pb-3 text-right font-semibold text-slate-700">Accuracy</th>
                       <th className="pb-3 text-right font-semibold text-slate-700">Precision</th>
                       <th className="pb-3 text-right font-semibold text-slate-700">Recall</th>
