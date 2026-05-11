@@ -121,7 +121,7 @@ export async function POST(request: Request) {
     const savedFilename = `${randomUUID()}${ext}`;
     const savedPath = path.join(videosDir, savedFilename);
     await fs.writeFile(savedPath, videoBuffer);
-    videoUrl = `/videos/${savedFilename}`;
+    videoUrl = `/api/videos/${savedFilename}`;
 
     const whatsappSummary = phone?.trim() ? buildWhatsAppSummary(enrichedAnalysis) : undefined;
 
