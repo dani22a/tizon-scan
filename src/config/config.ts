@@ -1,2 +1,7 @@
-export const apiUrl =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000/api/v1";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+if (!backendUrl) {
+  throw new Error("NEXT_PUBLIC_BACKEND_URL no está configurada");
+}
+
+export const apiUrl = backendUrl.replace(/\/$/, "");
